@@ -16,6 +16,7 @@ def login():
     if request.method == 'GET':
         return render_template("index.html")
     else:
+        return str(request.form)
         return redirect(url_for('user_home', username=request.form['username']))
 
 
@@ -37,22 +38,19 @@ def user_home(username):
             return "something went wrong"
 
 
-@app.route('/user/<username>/rate')
+@app.route('/user/<username>/rate', methods=['GET', 'POST'])
 def give_rates(username):
-    pass
-
-
-@app.route('/test/<username>', methods=['GET', 'POST'])
-def tester(username):
     if request.method == 'GET':
-        return render_template("user_panel.html", username=username)
+        mycursor.execute('SELECT * FROM Top_movies LIMIT 10;')
+        data = mycursor.fetchall()
+        return render_template("rates_panel.html", data=data)
     else:
-        if request.form['choose_action'] == 'rate':
-            return redirect(url_for('give_rates'), username=username)
-        elif request.form['choose_action'] == 'recommend':
-            return redirect(url_for('get_recommendations'), username=username)
-        else:
-            return "something went wrong"
+        return str(request.form)
+
+
+@app.route('/test', methods=['GET', 'POST'])
+def tester():
+    return render_template("rates_panel.html")
 
 
 if __name__ == '__main__':
