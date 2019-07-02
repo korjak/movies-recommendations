@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>witam serdecznie</title>
+        <meta name="description" content="powitanko">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    </head>
+    <body>
+        <div id="login">
+            <h1>Movies recommender 2000</h1>
+            <p>Hi {{username}}, choose your action:</p>
+            <form method="post">
+                <button type="submit" name="choose_action" value="rate">Rate movies</button>
+                <button type="submit" name="choose_action" value="recommend">Get recommendations</button>
+            </form>
+        </div>
+    </body>
+</html>
