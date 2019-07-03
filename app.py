@@ -45,7 +45,10 @@ def give_rates(username):
         data = mycursor.fetchall()
         return render_template("rates_panel.html", data=data)
     else:
-        return str(request.form)
+        # TODO: each user should have his own rate - OOP?
+        rates = {}
+        rates.update(request.form)
+        return str(rates)
 
 
 @app.route('/test', methods=['GET', 'POST'])

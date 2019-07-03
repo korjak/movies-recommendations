@@ -16,51 +16,50 @@
         <div id="login">
             <h1>Movies recommender 2000</h1>
             <h3>Rate movies</h3>
-            <form id='myform' method="post">
+<form method="post">
                 {%for i in data%}
                 <div class='wrapper'>
                     <div id='left'>
                         {{i[1]}}
                     </div>
-                    <div id='right' class='rating'>
-                        
-                          <label>
-                            <input type="radio" name={{i[0]}} value="1" />
-                            <span class="icon">★</span>
-                          </label>
-                          <label>
-                            <input type="radio" name={{i[0]}} value="2" />
-                            <span class="icon">★</span>
-                            <span class="icon">★</span>
-                          </label>
-                          <label>
-                            <input type="radio" name={{i[0]}} value="3" />
-                            <span class="icon">★</span>
-                            <span class="icon">★</span>
-                            <span class="icon">★</span>   
-                          </label>
-                          <label>
-                            <input type="radio" name={{i[0]}} value="4" />
-                            <span class="icon">★</span>
-                            <span class="icon">★</span>
-                            <span class="icon">★</span>
-                            <span class="icon">★</span>
-                          </label>
-                          <label>
-                            <input type="radio" name={{i[0]}} value="5" />
-                            <span class="icon">★</span>
-                            <span class="icon">★</span>
-                            <span class="icon">★</span>
-                            <span class="icon">★</span>
-                            <span class="icon">★</span>
-                          </label>
-                        <br>
+                    <div class="rating">
+                      <label>
+                        <input type="radio" name="{{i[0]}}" value="1" />
+                        <span class="icon">★</span>
+                      </label>
+                      <label>
+                        <input type="radio" name="{{i[0]}}" value="2" />
+                        <span class="icon">★</span>
+                        <span class="icon">★</span>
+                      </label>
+                      <label>
+                        <input type="radio" name="{{i[0]}}" value="3" />
+                        <span class="icon">★</span>
+                        <span class="icon">★</span>
+                        <span class="icon">★</span>   
+                      </label>
+                      <label>
+                        <input type="radio" name="{{i[0]}}" value="4" />
+                        <span class="icon">★</span>
+                        <span class="icon">★</span>
+                        <span class="icon">★</span>
+                        <span class="icon">★</span>
+                      </label>
+                      <label>
+                        <input type="radio" name="{{i[0]}}" value="5" />
+                        <span class="icon">★</span>
+                        <span class="icon">★</span>
+                        <span class="icon">★</span>
+                        <span class="icon">★</span>
+                        <span class="icon">★</span>
+                      </label>
                     </div>
+                    
                 </div>
                 {%endfor%}
             
-                <button type="submit" form='myform'>Show next 10 movies</button>
-                </form>
+                <button type="submit">Show next 10 movies</button>
+</form>
         </div>
     </body>
 </html>
