@@ -1,11 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for
 import mysql.connector
 import random
-from numpy import  transpose
+from numpy import transpose
 from numpy.random import randn
 from scipy.optimize import fmin
 from pandas import DataFrame
-import operator
 
 
 app = Flask(__name__)
@@ -17,7 +16,7 @@ mydb = mysql.connector.connect(
 )
 mycursor = mydb.cursor()
 THETAS_NO = 200
-ITER_NO = 512000
+ITER_NO = 256000
 
 
 def check_user(username):
@@ -55,11 +54,6 @@ def get_param(user_id, X):
 
 
 def cost_function(theta,X,Y):
-    #print("Cost function")
-    #print("thetas: " + str(theta.shape))
-    #print("X: " + str(X.shape))
-    #print("Y: " + str(len(Y)))
-    #print("matmul(X,theta): " + str(test.shape))
     J = X @ theta - Y
     J = J**2
     J = sum(J)
@@ -75,18 +69,9 @@ def learn(user_id,X):
     X = transpose(X)
     theta = fmin(cost_function,t0,(X,Y),  maxiter=ITER_NO)
     vmin = cost_function(theta, X, Y)
-    #print("******************000000")
-    #print(theta[0])
-    #print("******************111111")
-    #print(theta[1])
-    #print("******************222222")
-    #print(theta[2])
-    #print("******************333333")
     print("vmin: " + str(vmin))
     print(theta)
     for idx, val in enumerate(theta):
-        #print('idx: ' + str(idx))
-        #print('val: ' + str(val))
         mycursor.execute('INSERT INTO Thetas VALUES (%s, %s, %s)', (user_id, idx+1, val))
     mydb.commit()
     return theta
@@ -121,62 +106,59 @@ def give_rates(username):
         data = mycursor.fetchall()
         return render_template("rates_panel.html", data=data)
     else:
-        offset = random.randint(0,4990)
-        rates = request.form
-        for movie, rate in rates.items():
-            mycursor.execute('INSERT INTO Ratings VALUES (%s, %s, %s)', (name_to_id(username), movie, rate))
-            mycursor.execute('INSERT INTO Rmatrix VALUES (%s, %s)', (name_to_id(username), movie))
-            mydb.commit()
-        mycursor.execute('SELECT * FROM Top_movies T WHERE NOT EXISTS \
-                                 (SELECT * FROM Rmatrix R WHERE R.movieID=T.movieID AND R.userID=%s) LIMIT 10 OFFSET %s;', (int(name_to_id(username)), offset))
-        data = mycursor.fetchall()
-        return render_template("rates_panel.html", data=data)
+        if request.form['type'] == 'back':
+            return redirect(url_for('user_home', username=username))
+        else:
+            offset = random.randint(0, 4990)
+            rates = request.form
+            for movie, rate in rates.items():
+                if movie != 'type':
+                    mycursor.execute('INSERT INTO Ratings VALUES (%s, %s, %s)', (name_to_id(username), movie, rate))
+                    mycursor.execute('INSERT INTO Rmatrix VALUES (%s, %s)', (name_to_id(username), movie))
+                    mydb.commit()
+            mycursor.execute('SELECT * FROM Top_movies T WHERE NOT EXISTS \
+                                     (SELECT * FROM Rmatrix R WHERE R.movieID=T.movieID AND R.userID=%s) LIMIT 10 OFFSET %s;', (int(name_to_id(username)), offset))
+            data = mycursor.fetchall()
+            return render_template("rates_panel.html", data=data)
 
 
-@app.route('/user/<username>/recommend', methods=['GET'])
+@app.route('/user/<username>/recommend', methods=['GET', 'POST'])
 def give_recommendations(username):
-    prediction = {}
-    movies = []
-    mycursor.execute('SELECT movieID FROM Top_movies')
-    data = mycursor.fetchall()
-    df = DataFrame()
-    for i in data:
-        movies.append(i[0])
-    movies.remove(187541)   # movie no 187541 seems to be the only one without X values
-    for movie in movies:
-        mycursor.execute('SELECT relevance FROM Xs WHERE movieID=%s LIMIT %s',(movie, THETAS_NO))
-        Xtemp = mycursor.fetchall()
-        X = []
-        for i in Xtemp:
-            X.append(i[0])
-        df[movie] = X
-    mycursor.execute('SELECT tVal FROM Thetas WHERE userID=%s', (name_to_id(username),))
-    data = mycursor.fetchall()
-    if len(data) == 0:
-        theta = learn(int(name_to_id(username)),df)
-        print("Recommendations")
-    else:
-        theta = []
-        for i in data:
-            theta.append(i[0])
-    for column in df.columns:
-        #print('THEEEEEETAAAAAAAA')
-        #print(theta)
-        prediction.update({column: df[column].dot(theta)})
-    prediction_sort = sorted(prediction.items(), key=lambda kv: kv[1], reverse=True)
-    movies_names = []
-    for key, value in prediction_sort:
-        mycursor.execute('SELECT title FROM Movies WHERE movieID=%s', (key,))
+    if request.method == 'GET':
+        prediction = {}
+        movies = []
+        mycursor.execute('SELECT movieID FROM Top_movies')
         data = mycursor.fetchall()
-        movies_names.append(data[0][0])
-    return str(movies_names)
-
-
-
-@app.route('/test', methods=['GET', 'POST'])
-def tester():
-    return render_template("rates_panel.html")
-
+        df = DataFrame()
+        for i in data:
+            movies.append(i[0])
+        movies.remove(187541)   # movie no 187541 seems to be the only one without X values
+        for movie in movies:
+            mycursor.execute('SELECT relevance FROM Xs WHERE movieID=%s LIMIT %s',(movie, THETAS_NO))
+            Xtemp = mycursor.fetchall()
+            X = []
+            for i in Xtemp:
+                X.append(i[0])
+            df[movie] = X
+        mycursor.execute('SELECT tVal FROM Thetas WHERE userID=%s', (name_to_id(username),))
+        data = mycursor.fetchall()
+        if len(data) == 0:
+            theta = learn(int(name_to_id(username)),df)
+        else:
+            theta = []
+            for i in data:
+                theta.append(i[0])
+        for column in df.columns:
+            prediction.update({column: df[column].dot(theta)})
+        prediction_sort = sorted(prediction.items(), key=lambda kv: kv[1], reverse=True)
+        movies_names = []
+        for key, value in prediction_sort:
+            mycursor.execute('SELECT title FROM Movies WHERE movieID=%s', (key,))
+            data = mycursor.fetchall()
+            movies_names.append(data[0][0])
+        return render_template("recommendation_panel.html", data=movies_names)
+    else:
+        return redirect(url_for('user_home', username=username))
 
 
 if __name__ == '__main__':

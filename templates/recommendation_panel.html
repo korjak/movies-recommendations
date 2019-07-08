@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>witam serdecznie</title>
+        <meta name="description" content="powitanko">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    </head>
+    <body>
+        <div id="login">
+            <h1>Movies recommender 2000</h1>
+            <h3>Your top 10 movies to watch</h3>
+            {{data[0]}}<br>
+            {{data[1]}}<br>
+            {{data[2]}}<br>
+            {{data[3]}}<br>
+            {{data[4]}}<br>
+            {{data[5]}}<br>
+            {{data[6]}}<br>
+            {{data[7]}}<br>
+            {{data[8]}}<br>
+            {{data[9]}}<br>
+            <form method="post">
+                <button type="submit" name="back">Go back</button>
+            </form>
+        </div>
+    </body>
+</html>
